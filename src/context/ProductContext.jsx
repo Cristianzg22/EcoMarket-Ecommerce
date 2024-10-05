@@ -5,7 +5,7 @@ import {
   collection,
   addDoc,
   query,
-  orderBy, // Importar orderBy para ordenar los productos
+  orderBy,
   onSnapshot,
   doc,
   getDoc,
@@ -30,90 +30,112 @@ const ProductContext = createContext();
 
 // 2do Paso -> Crear el Proveedor
 const ProductProvider = (props) => {
-  const [products, setProduct] = useState([]); // Estado para los productos
-  const [productLoading, setProductLoading] = useState(false); // Estado para controlar la carga de productos
-  const [minPrice, setMinPrice] = useState(0); // Estado para el precio mínimo
-  const [maxPrice, setMaxPrice] = useState(0); // Estado para el precio máximo
+  const [products, setProduct] = useState([]); 
+  const [productLoading, setProductLoading] = useState(false); 
+  const [minPrice, setMinPrice] = useState(0); 
+  const [maxPrice, setMaxPrice] = useState(0); 
 
-  const { currentUser } = useAuth(); // Obtener el usuario actual del contexto de autenticación
-  const [addRemovecartLoading, setAddRemoveCartLoading] = useState(false); // Estado para controlar la carga al agregar o eliminar del carrito
-  const [userCart, setuserCart] = useState([]); // Estado para el carrito del usuario
-  const [userOrder, setUserOrder] = useState([]); // Estado para las órdenes del usuario
+  const { currentUser } = useAuth(); 
+  const [addRemovecartLoading, setAddRemoveCartLoading] = useState(false); 
+  const [userCart, setUserCart] = useState([]); 
+  const [userOrder, setUserOrder] = useState([]); 
 
   /********** Calcular los precios mínimo y máximo **********/
   useEffect(() => {
     const calculateMinMaxPrices = () => {
-      const prices = products.map((item) => item.price);
-      setMinPrice(Math.min(...prices)); // Establecer el precio mínimo
-      setMaxPrice(Math.max(...prices)); // Establecer el precio máximo
+      if (products.length > 0) {
+        const prices = products.map((item) => item.price);
+        setMinPrice(Math.min(...prices)); 
+        setMaxPrice(Math.max(...prices)); 
+      }
     };
 
-    if (products.length > 0) {
-      calculateMinMaxPrices(); // Calcular precios si hay productos
-    }
-  }, [products]); // Añadir products como dependencia para evitar bucles infinitos
-
-  // Obtener la fecha actual
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth() + 1;
-  const date = currentDate.getDate();
+    calculateMinMaxPrices(); 
+  }, [products]); 
 
   /********** Agregar un nuevo producto a la base de datos **********/
   const handleCreateNewListing = async (name, category, price, imageURL) => {
-    setProductLoading(true); // Comenzar a cargar
+    setProductLoading(true); 
 
     try {
       await addDoc(collection(db, "products"), {
         name,
         category,
-        price: Number(price), // Asegurarse de que el precio sea un número
+        price: Number(price), 
         imageURL,
-        addedDate: currentDate, // Almacenar la fecha de adición
+        addedDate: new Date(), // Almacenar la fecha de adición
       });
       toast.success("Producto agregado exitosamente");
     } catch (error) {
       toast.error("Error al agregar el producto");
       console.log(error);
     }
-    setProductLoading(false); // Finalizar la carga
+    setProductLoading(false); 
   };
 
   /********** Obtener todos los productos de la base de datos **********/
   const getAllProduct = async () => {
-    setProductLoading(true); // Comenzar a cargar
+    setProductLoading(true); 
 
     try {
       const collectionRef = collection(db, "products");
+      const q = query(collectionRef, orderBy("addedDate", "desc")); 
 
-      const q = query(
-        collectionRef,
-        orderBy("addedDate", "desc") // Ordenar por fecha de adición en orden descendente
-      );
-
-      // Base de datos en tiempo real
       onSnapshot(q, (querySnapshot) => {
         const productArray = [];
         querySnapshot.forEach((doc) => {
           productArray.push({ ...doc.data(), id: doc.id });
         });
-
-        setProduct(productArray); // Actualizar el estado de productos
+        setProduct(productArray); 
       });
     } catch (err) {
       console.log(err);
     }
 
-    setProductLoading(false); // Finalizar la carga
+    setProductLoading(false); 
   };
 
   useEffect(() => {
-    getAllProduct(); // Llamar a la función para obtener todos los productos
+    getAllProduct(); 
   }, []);
+
+  // Actualizar un producto
+  const handleUpdateProduct = async (id, name, category, price, imageURL, discount) => {
+    setProductLoading(true);
+    try {
+      const productRef = doc(db, "products", id);
+      await setDoc(productRef, {
+        name,
+        category,
+        price: Number(price),
+        imageURL,
+        discount,
+        addedDate: new Date(),
+      });
+      toast.success("Producto actualizado exitosamente");
+    } catch (error) {
+      toast.error("Error al actualizar el producto");
+      console.log(error);
+    }
+    setProductLoading(false);
+  };
+
+  // Eliminar un producto
+  const handleDeleteProduct = async (id) => {
+    setProductLoading(true);
+    try {
+      await deleteDoc(doc(db, "products", id));
+      toast.success("Producto eliminado exitosamente");
+    } catch (error) {
+      toast.error("Error al eliminar el producto");
+      console.log(error);
+    }
+    setProductLoading(false);
+  };
 
   /********** Obtener el carrito del usuario **********/
   const getUserCart = async () => {
-    setProductLoading(true); // Comenzar a cargar
+    setProductLoading(true); 
     try {
       const cartCollectionRef = collection(db, `usersCarts/${currentUser.uid}/myCart`);
 
@@ -122,22 +144,19 @@ const ProductProvider = (props) => {
         querySnapshot.forEach((doc) => {
           cart.push({ id: doc.id, ...doc.data() });
         });
-
-        setuserCart(cart); // Actualizar el carrito con datos en tiempo real
+        setUserCart(cart); 
       });
     } catch (error) {
       toast.error("Error al obtener el carrito del usuario");
       console.error("Error al obtener el carrito del usuario:", error);
-      return [];
     }
-    setProductLoading(false); // Finalizar la carga
+    setProductLoading(false); 
   };
 
   /********** Agregar al Carrito **********/
   const handleAdd = async (product) => {
-    setAddRemoveCartLoading(true); // Comenzar a cargar
+    setAddRemoveCartLoading(true); 
 
-    // Base de datos
     try {
       if (!currentUser) {
         setAddRemoveCartLoading(false);
@@ -145,63 +164,46 @@ const ProductProvider = (props) => {
         return;
       }
 
-      // Verificar si el producto ya está en el carrito
-      const cartDocRef = doc(
-        db,
-        `usersCarts/${currentUser.uid}/myCart`,
-        product.id
-      );
+      const cartDocRef = doc(db, `usersCarts/${currentUser.uid}/myCart`, product.id);
       const cartDocSnapshot = await getDoc(cartDocRef);
 
       if (cartDocSnapshot.exists()) {
-        // Si el producto ya está en el carrito, actualizar su cantidad
-        await setDoc(
-          cartDocRef,
-          {
-            quantity: increment(1), // Incrementar la cantidad
-          },
-          { merge: true }
-        );
+        await setDoc(cartDocRef, {
+          quantity: increment(1), 
+        }, { merge: true });
         toast.success("Producto incrementado en 1");
-
       } else {
-        // Si el producto no está en el carrito, agregarlo con una cantidad de 1
         await setDoc(cartDocRef, {
           quantity: 1,
-          ...product, // Incluir todo el objeto del producto
+          ...product, 
         });
         toast.success("Producto agregado al carrito");
       }
     } catch (error) {
       toast.error("Error al agregar el producto al carrito");
     }
-    setAddRemoveCartLoading(false); // Finalizar la carga
+    setAddRemoveCartLoading(false); 
   };
 
   /********** Manejar la eliminación del carrito **********/
   const handleRemove = async (productId) => {
-    setAddRemoveCartLoading(true); // Comenzar a cargar
+    setAddRemoveCartLoading(true); 
     try {
       if (!currentUser) {
-        // Manejar el caso donde currentUser o currentUser.uid no está definido
         setAddRemoveCartLoading(false);
         return;
       }
 
-      // Buscar el producto en el carrito
       const cartDocRef = doc(db, `usersCarts/${currentUser.uid}/myCart`, productId);
-
       const cartDocsSnapshot = await getDoc(cartDocRef);
 
       if (cartDocsSnapshot.exists()) {
         const currentQuantity = cartDocsSnapshot.data().quantity;
 
         if (currentQuantity > 1) {
-          // Si la cantidad del producto es mayor que 1, disminuir su cantidad
           await setDoc(cartDocRef, { quantity: increment(-1) }, { merge: true });
           toast.success("Producto disminuido en 1");
         } else {
-          // Si la cantidad del producto es 1, eliminarlo del carrito
           await deleteDoc(cartDocRef);
           toast.success("Producto eliminado del carrito");
         }
@@ -209,77 +211,75 @@ const ProductProvider = (props) => {
     } catch (error) {
       toast.error("Error al eliminar el producto del carrito");
     }
-    setAddRemoveCartLoading(false); // Finalizar la carga
+    setAddRemoveCartLoading(false); 
   };
 
-  const TotalCart = (userOrder) => {
-    return userOrder.reduce(
-      (total, product) => total + product.price * product.quantity, // Calcular el total del carrito
+  const TotalCart = (userCart) => {
+    return userCart.reduce(
+      (total, product) => total + product.price * product.quantity, 
       0
     );
   };
 
   /********** Realizar un pedido **********/
   const placeOrder = async () => {
-    setProductLoading(true); // Comenzar a cargar
+    setProductLoading(true);
     try {
-      let orderDate = date.toString() + "-" + month.toString() + "-" + year.toString();
-      let newOrder = { userCart, orderDate };
-      const ordersCollectionRef = collection(
-        db,
-        `userOrders/${currentUser.uid}/orders`
-      );
-      await setDoc(doc(ordersCollectionRef), newOrder);
-
-      // Limpiar el carrito del usuario en la subcolección "carts"
-      const cartCollectionRef = collection(
-        db,
-        `usersCarts/${currentUser.uid}/myCart`
-      );
+      // Generar la fecha del pedido
+      const orderDate = new Date().toLocaleDateString();
+      const newOrder = { userCart, orderDate };
+  
+      // Referencia a la colección de pedidos
+      const ordersCollectionRef = collection(db, `userOrders/${currentUser.uid}/orders`);
+  
+      // Agregar el nuevo pedido
+      await addDoc(ordersCollectionRef, newOrder);
+      toast.success("Pedido agregado exitosamente!");
+  
+      // Referencia a la colección del carrito
+      const cartCollectionRef = collection(db, `usersCarts/${currentUser.uid}/myCart`);
       const cartQuerySnapshot = await getDocs(cartCollectionRef);
+  
+      // Crear batch para eliminar productos del carrito
       const batch = writeBatch(db);
-
+  
+      // Eliminar cada producto del carrito
       cartQuerySnapshot.forEach((doc) => {
-        batch.delete(doc.ref); // Eliminar todos los documentos en el carrito
+        batch.delete(doc.ref);
       });
-
-      await batch.commit(); // Realizar la escritura por lotes
-      setuserCart([]); // Limpiar el estado del carrito
-
-      toast.success("Pedido realizado exitosamente!");
+  
+      // Ejecutar el batch
+      await batch.commit();
+      toast.success("Carrito vaciado correctamente!");
+  
+      // Vaciar el estado local del carrito
+      setUserCart([]);
     } catch (error) {
-      toast.error("Error al realizar el pedido!");
-      console.error("Error al realizar el pedido:", error);
+      console.error("Error al realizar el pedido:", error); // Log del error completo
+      toast.error("Error al realizar el pedido: " + error.message); // Mostrar el mensaje de error específico
     }
-    setProductLoading(false); // Finalizar la carga
+    setProductLoading(false);
   };
 
   /********** Obtener historial de pedidos del usuario **********/
   const getUserOrderHistory = async () => {
-    setProductLoading(true); // Comenzar a cargar
+    setProductLoading(true); 
     try {
-      const ordersCollectionRef = collection(
-        db,
-        `userOrders/${currentUser.uid}/orders`
-      );
+      const ordersCollectionRef = collection(db, `userOrders/${currentUser.uid}/orders`);
 
-      // Base de datos en tiempo real
-      const q = query(
-        ordersCollectionRef,
-        orderBy("orderDate", "desc") // Ordenar por fecha de pedido en orden descendente
-      );
+      const q = query(ordersCollectionRef, orderBy("orderDate", "desc")); 
       onSnapshot(q, (querySnapshot) => {
         const orderHistory = [];
 
         querySnapshot.forEach((doc) => {
           orderHistory.push({ id: doc.id, ...doc.data() });
         });
-        setUserOrder(orderHistory); // Actualizar el estado del historial de pedidos
+        setUserOrder(orderHistory); 
       });
     } catch (error) {
-      console.log("Error en el historial de pedidos!!", error);
+      console.log("Error en el historial de pedidos:", error);
     }
-    setProductLoading(false); // Finalizar la carga
+    setProductLoading(false); 
   };
 
   return (
@@ -299,6 +299,8 @@ const ProductProvider = (props) => {
         placeOrder,
         getUserOrderHistory,
         userOrder,
+        handleUpdateProduct,
+        handleDeleteProduct,
       }}
     >
       {props.children}

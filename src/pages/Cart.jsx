@@ -65,15 +65,27 @@ const Cart = () => {
                               {/* Nombre y precio del producto */}
                               <p className="mb-2 text-muted"></p>
                               <p> {p.name}</p>
-                              <p>Precio: {p.price} </p>
+                              <p>Precio: ${p.price} COP</p>
                             </div>
                           </div>
 
                           <div className="p-2 d-flex align-items-center">
                             {/* Botones para incrementar o reducir la cantidad del producto */}
-                            <Button disabled={addRemovecartLoading} onClick={() => handleRemove(p.id)} variant="primary"> - </Button>
+                            <Button 
+                              disabled={addRemovecartLoading} 
+                              onClick={() => handleRemove(p.id)} 
+                              variant="dark" 
+                            > 
+                              - 
+                            </Button>
                             <span className='m-4'>   {p.quantity} </span>
-                            <Button disabled={addRemovecartLoading} onClick={() => handleAdd({ ...p })} variant="primary"> + </Button>
+                            <Button 
+                              disabled={addRemovecartLoading} 
+                              onClick={() => handleAdd({ ...p })} 
+                              variant="dark"
+                            > 
+                              + 
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -88,12 +100,12 @@ const Cart = () => {
                   <div className="d-flex justify-content-between mt-4 mb-4 p-3 mb-2 bg-body-secondary rounded">
                     <div>Precio Total</div>
                     {/* Mostrar el precio total del carrito */}
-                    <div> &#x20B9; {TotalCart(userCart)} </div>
+                    <div> $ {Math.round(TotalCart(userCart))}COP </div>
                   </div>
 
                   <div className="d-grid mt-3">
                     {/* Botón para proceder con la compra */}
-                    <Button variant="danger" as={NavLink} to="/order" onClick={() => { placeOrder() }}>Comprar</Button>
+                    <Button variant="warning" as={NavLink} to="/order" onClick={() => { placeOrder() }}>Comprar</Button>
                   </div>
                 </div>
               </div>

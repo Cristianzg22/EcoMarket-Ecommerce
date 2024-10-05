@@ -30,10 +30,10 @@ const Login = () => {
     try {
       await logInWithEmailAndPassword(email, password);  // Intentamos iniciar sesión con email y contraseña
       navigate("/");  // Redirigimos al usuario a la página de inicio
-      toast.success('Successfully Login !');  // Mostramos un mensaje de éxito
+      toast.success('¡Inicio de sesión exitoso!');  // Mostramos un mensaje de éxito
       
     } catch (err) {
-      toast.error('Failed to log in!');  // Mostramos un mensaje de error
+      toast.error('Error al iniciar sesión');  // Mostramos un mensaje de error
     }
 
     setLoading(false);  // Cambiamos el estado de carga a falso
@@ -48,10 +48,10 @@ const Login = () => {
     try {
       await signInWithGoogle();  // Intentamos iniciar sesión con Google
       navigate("/");  // Redirigimos al usuario a la página de inicio
-      toast.success('Successfully Login !');  // Mostramos un mensaje de éxito
+      toast.success('¡Inicio de sesión exitoso!');  // Mostramos un mensaje de éxito
 
     } catch(error) {
-      toast.error('Failed to log in!');  // Mostramos un mensaje de error     
+      toast.error('Error al iniciar sesión');  // Mostramos un mensaje de error     
     }
 
     setLoading(false);  // Cambiamos el estado de carga a falso
@@ -71,60 +71,59 @@ const Login = () => {
         <Row className="vh-100 d-flex justify-content-center align-items-center">
           <Col md={8} lg={6} xs={12}>
             {/* Estilo adicional para la tarjeta de inicio de sesión */}
-            <div className="border border-3 border-primary"></div>
+            <div className="border border-3 border-warning"></div>
 
-            <Card className="shadow">
-              <Card.Body>
-                <div className="mb-3 mt-md-4">
-                  <h2 className="fw-bold mb-2 text-uppercase ">Login</h2>
-                  <p className=" mb-5">Please enter your login email and password!</p>
-
-                  <div className="mb-3">
+            <Card className="shadow mt-5 pt-5">
+  <Card.Body>
+    <div className="mb-3 mt-md-4">
+      <h2 className="fw-bold mb-2 text-uppercase text-warning pb-2">Iniciar Sesión</h2>
+      <p className="mb-5 text-dark">Por favor, ingresa tu correo electrónico y contraseña</p>
+      <div className="mb-3">
 
                     {/* Formulario para manejar el login */}
                     <Form onSubmit={handleSubmit}>
                       {/* Campo para ingresar el email */}
                       <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>Email address</Form.Label>
+                        <Form.Label>Correo electrónico</Form.Label>
                         <Form.Control 
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             type="email" 
-                            placeholder="Enter email"
+                            placeholder="Ingresa tu correo"
                             required
                         />
                       </Form.Group>
 
                       {/* Campo para ingresar la contraseña */}
                       <Form.Group className="mb-3" controlId="formBasicPassword">
-                          <Form.Label>Password</Form.Label>
+                          <Form.Label>Contraseña</Form.Label>
                           <Form.Control
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
                               type="password" 
-                              placeholder="Password"
+                              placeholder="Contraseña"
                               required 
                           />
                       </Form.Group>
                     
                       {/* Enlace para olvidar contraseña */}
-                      <Form.Group className="mb-3" controlId="formBasicCheckbox">
+                      <Form.Group className="mb-3" controlId="formBasicCheckbox ">
                         <p className="small">
-                          <NavLink className="text-primary" to="/forgetpassword">
-                            Forgot password?
+                          <NavLink className="text-dark" to="/forgetpassword">
+                            ¿Olvidaste tu contraseña?
                           </NavLink>
                         </p>
                       </Form.Group>
                       
                       {/* Botón para iniciar sesión */}
                       <div className="d-grid">
-                        <Button className="mb-3" variant="primary" type="submit" disabled={loading}>
-                          Login
+                        <Button className="mb-3" variant="warning" type="submit" disabled={loading}>
+                          Iniciar Sesión
                         </Button>
 
                         {/* Botón para iniciar sesión con Google */}
-                        <Button variant="danger" onClick={signInWithGoogleHandle} disabled={loading}>
-                          Sign in With Google
+                        <Button variant="dark" onClick={signInWithGoogleHandle} disabled={loading}>
+                          Iniciar Sesión con Google
                         </Button>
                       </div>
 
@@ -133,9 +132,9 @@ const Login = () => {
                     {/* Enlace para registrarse si no tiene una cuenta */}
                     <div className="mt-3">
                       <p className="mb-0 text-center">
-                        Don't have an account?{" "}
-                        <NavLink to="/register" className="text-primary fw-bold">
-                          Sign Up
+                        ¿No tienes una cuenta?{" "}
+                        <NavLink to="/register" className="text-dark fw-bold">
+                          Regístrate
                         </NavLink>
                       </p>
                     </div>

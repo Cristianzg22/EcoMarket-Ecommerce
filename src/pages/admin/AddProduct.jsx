@@ -1,103 +1,169 @@
 import React, { useState } from 'react';
+import { useProduct } from '../../context/ProductContext'; 
+import { Button, Form, Container, Row, Col, Table } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 
-// CSS
-import { Col, Button, Row, Container, Form } from "react-bootstrap";
+function AddProduct() {
+  const { products, handleCreateNewListing, handleUpdateProduct, handleDeleteProduct } = useProduct();
+  const [productName, setProductName] = useState('');
+  const [category, setCategory] = useState(''); 
+  const [price, setPrice] = useState('');
+  const [imageURL, setImageURL] = useState('');
+  const [editingProductId, setEditingProductId] = useState(null);
+  const [discount, setDiscount] = useState(false);
 
-// Contexto API
-import { useProduct } from '../../context/ProductContext';
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newProduct = {
+      name: productName,
+      category,
+      price: parseFloat(price),
+      imageURL,
+      discount, // Añadir el estado de descuento al nuevo producto
+    };
 
-const AddProduct = () => {
-  // Se extrae la función para manejar la creación de un nuevo producto desde el contexto de productos
-  const { handleCreateNewListing } = useProduct();
+    if (editingProductId) {
+      await handleUpdateProduct(editingProductId, productName, category, newProduct.price, imageURL, discount); // Actualizar producto existente
+    } else {
+      await handleCreateNewListing(productName, category, price, imageURL, discount); // Agregar nuevo producto
+    }
 
-  // Estados locales para almacenar los valores de entrada del formulario
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("Men's Clothing");
-  const [price, setPrice] = useState(0);
-  const [imageURL, setImageURL] = useState("");
+    // Limpiar campos después de agregar o actualizar
+    setProductName('');
+    setCategory('');
+    setPrice('');
+    setImageURL('');
+    setDiscount(false);
+    setEditingProductId(null);
+  };
 
-  // Función que maneja el envío del formulario
-  const handleSubmit = (e) => {
-    e.preventDefault();  // Previene el comportamiento predeterminado del formulario
+  const handleEdit = (product) => {
+    setProductName(product.name);
+    setCategory(product.category);
+    setPrice(product.price);
+    setImageURL(product.imageURL);
+    setDiscount(product.discount); // Cargar el estado de descuento del producto a editar
+    setEditingProductId(product.id);
+  };
 
-    // Llama a la función para crear un nuevo listado de producto
-    handleCreateNewListing(name, category, price, imageURL);
+  const handleDelete = async (id) => {
+    await handleDeleteProduct(id); 
+  };
 
-    // Limpia los campos del formulario después de agregar el producto
-    setName("");
-    setPrice(0);
-    setImageURL("");
+  const handleToggleDiscount = async (id) => {
+    const updatedProduct = products.find(product => product.id === id);
+    const newDiscountStatus = !updatedProduct.discount;
+
+    await handleUpdateProduct(id, updatedProduct.name, updatedProduct.category, updatedProduct.price, updatedProduct.imageURL, newDiscountStatus); // Actualizar producto con nuevo estado de descuento
+    toast.success(`Descuento ${newDiscountStatus ? 'activado' : 'desactivado'} para ${updatedProduct.name}`);
   };
 
   return (
-    <>
-      <Container style={{ marginTop: "80px" }}>
-        <h3 className="text-center mb-4">Agregar Producto</h3>
-
-        {/* Fila y columna para centrar el formulario en la página */}
-        <Row className="d-flex justify-content-center align-items-center">
-          <Col md={8} lg={6} xs={12}>
-            <Form onSubmit={handleSubmit}>
-              {/* Campo para el nombre del producto */}
-              <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Label>Nombre del Producto</Form.Label>
-                <Form.Control 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  type="text" 
-                  placeholder="Ingresa el Nombre del Producto"
-                  required
-                />
-              </Form.Group>
-
-              {/* Campo para seleccionar la categoría del producto */}
-              <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Label>Categoría</Form.Label>
-                <Form.Select 
-                  aria-label="Seleccione una categoría"
-                  defaultValue={category} 
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  <option value="Men's Clothing">Ropa de Hombre</option>
-                  <option value="Women's Clothing">Ropa de Mujer</option>
-                  <option value="Jewelery">Joyería</option>
-                  <option value="Electronics">Electrónicos</option>
-                </Form.Select>  
-              </Form.Group>
-
-              {/* Campo para ingresar el precio del producto */}
-              <Form.Group className="mb-3" controlId="formBasicPassword">
-                <Form.Label>Precio</Form.Label>
-                <Form.Control
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  type="number" 
-                  placeholder="Ingresa el Precio" 
-                  required
-                />
-              </Form.Group>
-
-              {/* Campo para ingresar el enlace de la imagen del producto */}
-              <Form.Group className="mb-3" controlId="formBasicPassword">
-                <Form.Label>Enlace de la Imagen del Producto</Form.Label>
-                <Form.Control
-                  value={imageURL}
-                  onChange={(e) => setImageURL(e.target.value)}
-                  type="text"
-                  required
-                />
-              </Form.Group>
-
-              {/* Botón para enviar el formulario y agregar el producto */}
-              <Button variant="primary" type="submit">
-                Agregar Producto
-              </Button>
-            </Form>
+    <Container>
+      <h2 className="text-center">Productos</h2>
+      <h2 className="text-center pt-4 mt-4">{editingProductId ? 'Editar Producto' : 'Agregar Producto'}</h2>
+      <Form onSubmit={handleSubmit}>
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="formProductName">
+              <Form.Label>Nombre del Producto</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Ingresa el nombre del producto"
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="formCategory">
+              <Form.Label>Categoría</Form.Label>
+              <Form.Select 
+                aria-label="Seleccione una categoría"
+                value={category} 
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              >
+                <option value="" disabled>Seleccione una categoría</option>
+                <option value="Ropa de Hombre">Ropa de Hombre</option>
+                <option value="Ropa de Mujer">Ropa de Mujer</option>
+                <option value="Joyería">Joyería</option>
+                <option value="Electrónicos">Electrónicos</option>
+              </Form.Select>  
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="formPrice">
+              <Form.Label>Precio</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="Ingresa el precio"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="formImageURL">
+              <Form.Label>URL de la Imagen</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Ingresa la URL de la imagen"
+                value={imageURL}
+                onChange={(e) => setImageURL(e.target.value)}
+                required
+              />
+            </Form.Group>
+            {/* <Form.Check
+              type="checkbox"
+              label="Activar Descuento"
+              checked={discount}
+              onChange={() => setDiscount(!discount)}
+            /> */}
           </Col>
         </Row>
-      </Container>
-    </>
-  )
+        <Button variant="primary" type="submit">
+          {editingProductId ? 'Actualizar Producto' : 'Agregar Producto'}
+        </Button>
+      </Form>
+
+      <h2 className="text-center pb-4 mt-4">Lista de Productos</h2>
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Imagen</th>
+            <th>Acciones</th>
+            <th>Descuento</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((product) => (
+            <tr key={product.id}>
+              <td>{product.id}</td>
+              <td>{product.name}</td>
+              <td>{product.category}</td>
+              <td>${product.price}</td>
+              <td><img src={product.imageURL} alt={product.name} width="50" /></td>
+              <td>
+                <Button variant="warning" onClick={() => handleEdit(product)}>Editar</Button>
+                <Button variant="danger" onClick={() => handleDelete(product.id)}>Eliminar</Button>
+              </td>
+              <td>
+                <Button
+                  variant={product.discount ? 'success' : 'secondary'}
+                  onClick={() => handleToggleDiscount(product.id)}
+                >
+                  {product.discount ? 'Desactivar Descuento' : 'Activar Descuento'}
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </Container>
+  );
 }
 
 export default AddProduct;

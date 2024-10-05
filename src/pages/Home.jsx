@@ -1,193 +1,204 @@
-import React, { useState } from 'react'
-
-// Componente: Importamos un spinner y la tarjeta de producto personalizada
+import React, { useState, useEffect } from 'react';
 import MySpinner from '../components/MySpinner';
 import ProductCard from '../components/ProductCard';
-
-// API de Contexto: Importamos el contexto de productos
 import { useProduct } from '../context/ProductContext';
 
 const Home = () => {
-  // Extraemos productos, el estado de carga y los precios mínimo y máximo del contexto
   const { products, productLoading, minPrice, maxPrice } = useProduct();
-  
-  // Estados para búsqueda, filtro de precio y categorías seleccionadas
-  const [searchVal, setSearchVal] = useState(""); // Valor de búsqueda
-  const [priceFilter, setPriceFilter] = useState(10000); // Filtro de precio inicial
-  
-  // Filtro por categorías
+  const [searchVal, setSearchVal] = useState("");
+  const [priceFilter, setPriceFilter] = useState(maxPrice);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
-  // Función para establecer el valor del filtro de precio
-  const handleSetPriceFilter = (e) => {
-    setPriceFilter(Number(e.target.value)); // Convertimos el valor a número
-  }
+  // Verificar valores de minPrice y maxPrice
+  useEffect(() => {
+    if (products.length > 0) {
+      setPriceFilter(maxPrice);
+    }
+  }, [maxPrice, products]);
 
-  // Función que maneja la selección de categorías mediante checkbox
+  const translateCategory = (category) => {
+    switch (category) {
+      case "Men's Clothing":
+        return "Ropa de Hombre";
+      case "Women's Clothing":
+        return "Ropa de Mujer";
+      case "Jewelery":
+        return "Joyería";
+      case "Electronics":
+        return "Electrónicos";
+      default:
+        return category;
+    }
+  };
+
+  const handleSetPriceFilter = (e) => {
+    setPriceFilter(Number(e.target.value));
+  };
+
   const handleCategoryCheckboxChange = (e) => {
     const category = e.target.value;
     if (e.target.checked) {
-      // Añadir categoría al array de categorías seleccionadas
       setSelectedCategories([...selectedCategories, category]);
     } else {
-      // Eliminar categoría del array de categorías seleccionadas
       setSelectedCategories(selectedCategories.filter((c) => c !== category));
     }
   };
 
-  // Filtro de productos en función de búsqueda, precio y categorías
+  const resetFilters = () => {
+    setSearchVal("");
+    setPriceFilter(maxPrice);
+    setSelectedCategories([]);
+  };
+
   const filteredProductList = products
-    // Filtrar por nombre si la búsqueda está vacía o si coincide con el nombre del producto
+    .filter((product) => !product.discount) // Excluir productos con descuento
     .filter((item) => {
       if (searchVal.trim() === "") {
         return true;
       }
-      if (item.name.toLowerCase().includes(searchVal.toLowerCase())) {
-        return item;
-      }
+      return item.name.toLowerCase().includes(searchVal.toLowerCase());
     })
-    // Filtrar por precio
     .filter((product) => {
       return product.price <= priceFilter;
     })
-    // Filtrar por categorías seleccionadas
     .filter((product) => {
-      if (selectedCategories.length == 0) {
-        return true;  // Si no hay categorías seleccionadas, mostrar todos los productos
+      if (selectedCategories.length === 0) {
+        return true;
       }
       return selectedCategories.includes(product.category);
     })
-
+    .map((product) => ({
+      ...product,
+      category: translateCategory(product.category),
+    }));
 
   return (
-    <>
-      { productLoading || products.length === 0 ? 
-      
-      // Mostrar spinner de carga mientras se obtienen los productos
-       ( <MySpinner />
-      
-      ) : (
-      
-      // Contenido principal cuando se cargan los productos
-      <div className="container mb-5" style={{ marginTop: "80px"}}>
-               
-        <h3 className="text-center mb-4">Todos los Productos</h3>
+    <div>
+      <div className="container mb-5" style={{ marginTop: "80px", backgroundColor: "#f0f0f0" }}>
+        {productLoading || products.length === 0 ? (
+          <MySpinner />
+        ) : (
+          <div>
+            <h3 className="text-center mb-4 fw-bold text-warning">Todos los Productos</h3>
 
-        {/* Filtro de búsqueda */}
-        <div className="row justify-content-center">
-          <div className="col-lg-5 mb-5">
-            <input
-              className="form-control me-2" 
-              type="search" 
-              placeholder="Buscar" 
-              aria-label="Buscar"
-              onChange={e => setSearchVal(e.target.value)} 
-              />
-
-          </div>
-        </div>
-        
-        <div className="row">
-        
-          {/* Sección de filtros */}
-          <div className="col-lg-2 pe-3 mb-4">
-            <h4 className="fw-semibold mb-4 "> Filtro </h4>
-
-            {/* Filtro de precio */}
-            <div className="input-group mb-3">
-              <label htmlFor ="customRange1" className="form-label fw-semibold text-muted">Precio : ₹{priceFilter}</label>
-              <input
-                type="range"
-                className="form-range"
-                id="customRange1"
-                min={minPrice}
-                max={maxPrice}
-                step="10"
-                value={priceFilter}
-                onChange={handleSetPriceFilter}
-              />
+            <div className="row justify-content-center mb-4">
+              <div className="col-lg-5">
+                <input
+                  className="form-control me-2 border border-dark"
+                  type="search"
+                  placeholder="Buscar productos..."
+                  aria-label="Buscar"
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                />
+              </div>
             </div>
 
-            {/* Filtro de categorías */}
-            <p className="fw-semibold text-muted"> Categoría </p>
+            <div className="row">
+              <div className="col-lg-2 pe-3 mb-4 p-3">
+                <h4 className="fw-semibold mb-4 text-black">Filtro</h4>
 
-            {/* Checkbox para filtrar por ropa de hombre */}
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value="Men's Clothing" 
-                id="Men"
-                onChange={handleCategoryCheckboxChange} 
-              />
-              <label className="form-check-label" htmlFor ="Men">
-                Ropa de Hombre
-              </label>
-            </div>
+                <div className="input-group mb-3">
+                  <label htmlFor="customRange1" className="form-label fw-semibold text-black">
+                    Precio máximo: ${priceFilter}
+                  </label>
+                  <input
+                    type="range"
+                    className="form-range"
+                    id="customRange1"
+                    min={minPrice}
+                    max={maxPrice}
+                    step="10"
+                    value={priceFilter}
+                    onChange={handleSetPriceFilter}
+                    style={{ color: "#000000" }}
+                  />
+                </div>
 
-            {/* Checkbox para filtrar por ropa de mujer */}
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value="Women's Clothing" 
-                id="Women"
-                onChange={handleCategoryCheckboxChange} 
-              />
-              <label className="form-check-label" htmlFor ="Women">
-                Ropa de Mujer
-              </label>
-            </div>
+                <p className="fw-semibold text-muted">Categorías</p>
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    value="Ropa de Hombre"
+                    id="Ropa de Hombre"
+                    checked={selectedCategories.includes("Ropa de Hombre")}
+                    onChange={handleCategoryCheckboxChange}
+                  />
+                  <label className="form-check-label" htmlFor="Ropa de Hombre">
+                    Ropa de Hombre
+                  </label>
+                </div>
 
-            {/* Checkbox para filtrar por joyería */}
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value="Jewelery" 
-                id="Jewelery"
-                onChange={handleCategoryCheckboxChange} 
-              />
-              <label className="form-check-label" htmlFor ="Jewelery">
-                Joyería
-              </label>
-            </div>
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    value="Ropa de Mujer"
+                    id="Ropa de Mujer"
+                    checked={selectedCategories.includes("Ropa de Mujer")}
+                    onChange={handleCategoryCheckboxChange}
+                  />
+                  <label className="form-check-label" htmlFor="Ropa de Mujer">
+                    Ropa de Mujer
+                  </label>
+                </div>
 
-            {/* Checkbox para filtrar por electrónica */}
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value="Electronics" 
-                id="Electronics"
-                onChange={handleCategoryCheckboxChange} 
-              />
-              <label className="form-check-label" htmlFor ="Electronics">
-                Electrónica
-              </label>
-            </div>
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    value="Joyería"
+                    id="Joyería"
+                    checked={selectedCategories.includes("Joyería")}
+                    onChange={handleCategoryCheckboxChange}
+                  />
+                  <label className="form-check-label" htmlFor="Joyería">
+                    Joyería
+                  </label>
+                </div>
 
-          </div>
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    value="Electrónicos"
+                    id="Electrónicos"
+                    checked={selectedCategories.includes("Electrónicos")}
+                    onChange={handleCategoryCheckboxChange}
+                  />
+                  <label className="form-check-label" htmlFor="Electrónicos">
+                    Electrónicos
+                  </label>
+                </div>
 
-          {/* Sección de productos filtrados */}
-          <div className="col-lg-10">
-              <div className="row g-3">
-                {/* Renderizar productos filtrados */}
-                {filteredProductList?.map((p) => (
-                  <div className="col-6 col-md-4 col-lg-3" key={p.id}>
-                    <ProductCard key={p.id} id={p.id} {...p} />
-                  </div>
-                ))}
+                {/* Botón de Eliminar Filtros */}
+                <button className="btn btn-warning mt-3" onClick={resetFilters}>
+                  Eliminar Filtros
+                </button>
+              </div>
+
+              <div className="col-lg-10">
+                <div className="row g-3">
+                  {filteredProductList?.map((p) => (
+                    <div className="col-6 col-md-4 col-lg-3" key={p.id}>
+                      <ProductCard key={p.id} id={p.id} {...p} />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        
+        )}
       </div>
 
-        )
-    }
-    </>
-    )
-}
+      <footer className="text-center text-lg-start bg-light text-muted">
+  <div className="container p-4">
+    <p>Desarrollado por Albert Peñaranda - Maria Hernandez - Cristian Zambrano</p>
+  </div>
+</footer>
+    </div>
+  );
+};
 
 export default Home;

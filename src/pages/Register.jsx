@@ -58,14 +58,14 @@ const Register = () => {
         <Row className="vh-100 d-flex justify-content-center align-items-center">
           <Col md={8} lg={6} xs={12}>
             {/* Decoración del borde */}
-            <div className="border border-3 border-primary"></div>
+            <div className="border border-3 border-warning"></div>
 
             {/* Tarjeta que contiene el formulario de registro */}
             <Card className="shadow">
               <Card.Body>
                 <div className="mb-3 mt-md-4">
-                  <h2 className="fw-bold mb-2 text-uppercase">Registro</h2>
-                  <p className=" mb-5">¡Por favor ingresa tu nombre, email y contraseña!</p>
+                  <h2 className="fw-bold mb-2 text-uppercase text-warning">Registro</h2>
+                  <p className=" mb-5 text-dark">¡Por favor ingresa tu nombre, email y contraseña!</p>
 
                   <div className="mb-3">
 
@@ -98,7 +98,7 @@ const Register = () => {
 
                       {/* Botón de registro */}
                       <div className="d-grid">
-                        <Button variant="primary" type="submit" disabled={loading}>
+                        <Button variant="warning" type="submit" disabled={loading}>
                           Registrar
                         </Button>
                       </div>
@@ -109,7 +109,7 @@ const Register = () => {
                     <div className="mt-3">
                       <p className="mb-0 text-center">
                         ¿Ya tienes una cuenta?{" "}
-                        <NavLink to="/login" className="text-primary fw-bold">
+                        <NavLink to="/login" className="text-dark fw-bold">
                           Iniciar Sesión
                         </NavLink>
                       </p>

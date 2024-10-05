@@ -38,7 +38,7 @@ export default function ForgotPassword() {
       <Container>
         <Row className="vh-100 d-flex justify-content-center align-items-center">
           <Col md={8} lg={6} xs={12}>
-            <div className="border border-3 border-primary"></div>
+            <div className="border border-3 border-dark"></div>
 
             <Card className="shadow">
               <Card.Body>
@@ -64,7 +64,7 @@ export default function ForgotPassword() {
                       {/* Enlace para volver a la página de inicio de sesión */}
                       <Form.Group className="mb-3" controlId="formBasicCheckbox">
                         <p className="small">
-                          <NavLink className="text-primary" to="/login">
+                          <NavLink className="text-dark" to="/login">
                             ¿Iniciar sesión?
                           </NavLink>
                         </p>
@@ -72,7 +72,7 @@ export default function ForgotPassword() {
 
                       {/* Botón para enviar la solicitud */}
                       <div className="d-grid">
-                        <Button variant="primary" type="submit" disabled={loading}>
+                        <Button variant="dark" type="submit" disabled={loading}>
                           Restablecer Contraseña
                         </Button>
                       </div>
@@ -82,7 +82,7 @@ export default function ForgotPassword() {
                     <div className="mt-3">
                       <p className="mb-0 text-center">
                         ¿Necesitas una cuenta?{" "}
-                        <NavLink to="/register" className="text-primary fw-bold">
+                        <NavLink to="/register" className="text-dark fw-bold">
                           Regístrate
                         </NavLink>
                       </p>

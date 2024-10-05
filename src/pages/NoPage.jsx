@@ -26,17 +26,17 @@ const NoPage = () => {
           
           {/* Mensaje de error */}
           <p className="fs-3"> 
-            <span className="text-danger">Oops!</span> Page not found.
+            <span className="text-danger">¡Ups!</span> Página no encontrada.
           </p>
           
           {/* Texto adicional */}
           <p className="lead">
-            The page you’re looking for doesn’t exist.
+            La página que estás buscando no existe.
           </p>
           
           {/* Botón para regresar a la página de inicio */}
           <Button as={NavLink} to="/" className="btn btn-primary"> 
-            Go Home 
+            Volver al inicio 
           </Button>
         </div>
       </div>

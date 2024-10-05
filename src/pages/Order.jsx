@@ -64,9 +64,9 @@ const Order = () => {
                         <tr key={item.id}>
                           {/* Muestra el nombre del producto, precio unitario, cantidad y precio total por artículo */}
                           <td>{item.name}</td>
-                          <td>{item.price}</td>
+                          <td>${item.price}</td>
                           <td>{item.quantity}</td>
-                          <td>{item.price * item.quantity}</td>
+                          <td>${item.price * item.quantity}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -77,10 +77,19 @@ const Order = () => {
                         <th colspanspan={2}></th>
                         <th></th>
                         <th>Total</th>
-                        <th>&#x20B9; {TotalCart(orders.userCart)}/-</th>
+                        <th>${Math.round(TotalCart(orders.userCart))}</th> 
                       </tr>
                     </tfoot>
                 </Table>
+
+                <a
+                href={`https://wa.me/${3007270698}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-warning"
+              >
+                Realizar pedido por WhatsApp
+              </a>
               </div> 
             ))
           }

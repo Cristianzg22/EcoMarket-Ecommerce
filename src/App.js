@@ -12,6 +12,7 @@ import Cart from './pages/Cart';
 import Order from './pages/Order';
 import ForgetPassword from './pages/ForgetPassword';
 import NoPage from './pages/NoPage';
+import Sale from './pages/Sale';
 
 // React Toastify: Biblioteca para mostrar notificaciones de forma rápida y sencilla
 import { ToastContainer } from 'react-toastify';
@@ -24,7 +25,6 @@ import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
 
 function App() {
-
   return (
     <>
       {/* Configuración del contenedor de notificaciones Toastify */}
@@ -48,13 +48,16 @@ function App() {
       {/* Definición de rutas de la aplicación */}
       <Routes>
         {/* Ruta para la página principal */}
-        <Route exact path="/" element= {<Home />} />
+        <Route exact path="/" element={<Home />} />
         {/* Ruta para la página de "Olvidé mi contraseña" */}
-        <Route path="/forgetpassword" element ={<ForgetPassword />} />
+        <Route path="/forgetpassword" element={<ForgetPassword />} />
         {/* Ruta para la página de inicio de sesión */}
-        <Route path="/login" element= {<Login />} />
+        <Route path="/login" element={<Login />} />
         {/* Ruta para la página de registro */}
-        <Route path="/register" element= { <Register /> } />
+        <Route path="/register" element={<Register />} />
+
+        {/* Ruta para la página de ofertas */}
+        <Route path="/sale" element={<Sale />} /> {/* Nueva ruta para ofertas */}
 
         {/* Ruta protegida para agregar un producto (solo accesible por administradores) */}
         <Route path="/admin/addProduct" element={
